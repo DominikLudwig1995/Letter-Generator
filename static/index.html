@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brief</title>
+<style>
+  /* Same design tokens/vocabulary as nka and cv-service: indigo
+     primary, 14px card radius, soft shadows, pill-ish rounded
+     controls -- kept in one <style> block since this frontend has no
+     build step. */
+  :root {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --surface-2: #fafbfd;
+    --border: #e4e7ee;
+    --text: #1c2128;
+    --muted: #6b7280;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-soft: #eef0fe;
+    --crit: #dc2626;
+    --crit-soft: #fef2f2;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --surface-2: #1c2128;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #7c72f0;
+      --accent-hover: #9089f5;
+      --accent-soft: #232042;
+      --crit: #f85149;
+      --crit-soft: #3d1418;
+      --shadow: none;
+      --shadow-md: none;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 28px 20px 60px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  header .logo {
+    display: grid; place-items: center; width: 36px; height: 36px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #7c72f0); color: #fff;
+    font-size: 1.05rem; flex-shrink: 0;
+  }
+  h1 { font-size: 1.25rem; margin: 0; font-weight: 650; letter-spacing: -.01em; }
+  .sub { color: var(--muted); font-size: 13px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .grid3 { display: grid; grid-template-columns: 230px 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 1180px) { .grid3 { grid-template-columns: 1fr 1fr; } .letters-panel { grid-column: 1 / -1; } }
+  @media (max-width: 860px) { .grid3 { grid-template-columns: 1fr; } .letters-panel { grid-column: auto; } }
+
+  .letters-panel { position: sticky; top: 20px; }
+  .letters-panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 10px; font-weight: 650; }
+  .letter-list { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .letter-list li {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
+    box-shadow: var(--shadow);
+    transition: border-color .12s ease, background-color .12s ease, transform .12s ease;
+  }
+  .letter-list li:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .letter-list li.active { border-color: var(--accent); background: var(--accent-soft); }
+  .letter-select {
+    flex: 1; min-width: 0; text-align: left; border: none; background: transparent;
+    padding: 8px 10px; font-size: 12.5px; font-weight: 600; overflow: hidden;
+  }
+  .letter-select .letter-recipient { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .letter-delete { background: transparent; border: none; padding: 4px 8px; color: var(--muted); }
+  .letter-delete:hover { color: var(--crit); border-color: transparent; }
+  .letters-empty { color: var(--muted); font-size: 12.5px; padding: 4px 2px 12px; }
+  .letters-status { font-size: 11.5px; color: var(--muted); margin-top: 4px; min-height: 14px; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow); padding: 1.25rem 1.4rem;
+  }
+  label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text); margin: 14px 0 5px; }
+  label:first-child { margin-top: 0; }
+  input, textarea, select {
+    width: 100%; font: inherit; font-size: 14px;
+    padding: 0.5rem 0.65rem; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  textarea { resize: vertical; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 13px; }
+  #recipient-name { min-height: 60px; }
+  #body { min-height: 220px; }
+
+  fieldset { border: 1px solid var(--border); border-radius: var(--radius); margin: 14px 0 0; padding: 4px 12px 12px; }
+  fieldset legend { font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 0 6px; }
+  fieldset label:first-of-type { margin-top: 10px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  button {
+    font-family: inherit; font-size: 13.5px; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    cursor: pointer; transition: all .12s ease;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
+  button.small { padding: 0.3rem 0.6rem; font-size: 12px; }
+  button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+
+  #new-letter-btn { border-style: dashed; }
+
+  .sig-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; }
+  #signature-pad { display: block; width: 100%; height: 140px; touch-action: none; cursor: crosshair; }
+  .sig-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .sig-hint { font-size: 11.5px; color: var(--muted); }
+
+  .preview-panel { position: sticky; top: 20px; }
+  .preview-frame {
+    width: 100%; height: 640px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--bg);
+  }
+  .preview-empty {
+    height: 640px; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 13.5px; text-align: center; padding: 20px;
+  }
+  .error {
+    margin-top: 12px; padding: 10px 12px; border-radius: var(--radius);
+    border: 1px solid var(--crit); background: var(--crit-soft); color: var(--crit); font-size: 13px;
+    white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    max-height: 200px; overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">✉</div>
+    <div>
+      <h1>Brief</h1>
+      <div class="sub">Standardbrief generieren -- Absender, Empfänger, Titel und Text ausfüllen, Vorschau prüfen, PDF herunterladen.</div>
+    </div>
+  </header>
+
+  <div class="grid3">
+    <div class="panel letters-panel">
+      <h2>Gespeicherte Briefe</h2>
+      <ul class="letter-list" id="letter-list"></ul>
+      <div class="letters-empty" id="letters-empty" style="display:none">Noch keine Briefe gespeichert.</div>
+      <button type="button" id="new-letter-btn" style="width:100%">+ Neuer Brief</button>
+      <div class="letters-status" id="letters-status"></div>
+    </div>
+
+    <div class="panel">
+      <label for="sender">Absender</label>
+      <select id="sender"></select>
+
+      <fieldset id="custom-sender-fields" style="display:none">
+        <legend>Eigener Absender</legend>
+        <label for="cs-name">Name</label>
+        <input id="cs-name" type="text" placeholder="Vor- und Nachname">
+        <label for="cs-strasse">Straße</label>
+        <input id="cs-strasse" type="text" placeholder="Straße und Hausnummer">
+        <label for="cs-ort">PLZ / Ort</label>
+        <input id="cs-ort" type="text" placeholder="12345 Stadt">
+        <label for="cs-email">E-Mail (optional)</label>
+        <input id="cs-email" type="text">
+      </fieldset>
+
+      <fieldset>
+        <legend>Empfänger</legend>
+        <label for="recipient-name">Name (mehrzeilig möglich, z.B. Firma + Abteilung)</label>
+        <textarea id="recipient-name" placeholder="Firma GmbH&#10;Abteilung"></textarea>
+        <label for="recipient-strasse">Straße</label>
+        <input id="recipient-strasse" type="text" placeholder="Straße und Hausnummer">
+        <label for="recipient-ort">PLZ / Ort</label>
+        <input id="recipient-ort" type="text" placeholder="12345 Stadt">
+      </fieldset>
+
+      <div class="row2">
+        <div>
+          <label for="subject">Titel / Betreff</label>
+          <input id="subject" type="text" placeholder="z.B. Kündigung des Vertrages">
+        </div>
+        <div>
+          <label for="letter-date">Datum</label>
+          <input id="letter-date" type="date">
+        </div>
+      </div>
+
+      <label for="bestellnummer">Bestellnummer / Kundennummer (optional)</label>
+      <input id="bestellnummer" type="text" placeholder="z.B. 123-4567890">
+
+      <label for="pdf-language">PDF-Sprache / PDF language</label>
+      <select id="pdf-language">
+        <option value="de">Deutsch</option>
+        <option value="en">English</option>
+      </select>
+
+      <label for="anrede">Anrede</label>
+      <input id="anrede" type="text" placeholder="Sehr geehrte Damen und Herren,">
+
+      <label for="body">Text</label>
+      <textarea id="body" placeholder="Brieftext. Leerzeile = neuer Absatz. *fett*, **kursiv**."></textarea>
+
+      <label for="grussformel">Grußformel</label>
+      <input id="grussformel" type="text" placeholder="Mit freundlichen Grüßen">
+
+      <label>Unterschrift (optional)</label>
+      <div class="sig-wrap"><canvas id="signature-pad"></canvas></div>
+      <div class="sig-row">
+        <span class="sig-hint">Mit Maus/Finger unterschreiben -- bleibt leer, wird nur der Name gedruckt.</span>
+        <button type="button" class="small" id="sig-clear">Löschen</button>
+      </div>
+
+      <div class="actions">
+        <button id="preview-btn" class="primary">Vorschau</button>
+        <button id="save-btn">Speichern</button>
+        <button id="download-btn">PDF herunterladen</button>
+        <button id="paperless-btn">In Paperless hochladen</button>
+      </div>
+      <div id="error" class="error" style="display:none"></div>
+      <div id="paperless-status" class="sig-hint" style="display:none; margin-top:8px;"></div>
+    </div>
+
+    <div class="panel preview-panel">
+      <div id="preview-empty" class="preview-empty">Noch keine Vorschau -- Formular ausfüllen und "Vorschau" klicken.</div>
+      <iframe id="preview-frame" class="preview-frame" style="display:none"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let previewUrl = null;
+let currentLetterId = null;
+
+async function loadSenders() {
+  const CUSTOM_OPTION = `<option value="custom">Eigener Absender…</option>`;
+  try {
+    const r = await fetch("api/senders");
+    const senders = await r.json();
+    $("sender").innerHTML =
+      senders.map(s => `<option value="${s.id}">${s.name}</option>`).join("") + CUSTOM_OPTION;
+  } catch (e) {
+    $("sender").innerHTML = `<option value="example">Jane Doe</option>` + CUSTOM_OPTION;
+  }
+}
+
+$("sender").addEventListener("change", () => {
+  $("custom-sender-fields").style.display = $("sender").value === "custom" ? "block" : "none";
+});
+
+// -- Signature pad -----------------------------------------------------
+// Plain canvas drawing, mouse + touch/pen via pointer events. Kept
+// deliberately simple -- no external signature-pad library, just enough
+// to capture a scribble as a PNG for the backend to embed.
+const sigCanvas = $("signature-pad");
+const sigCtx = sigCanvas.getContext("2d");
+let sigHasContent = false;
+let sigDrawing = false;
+
+function resizeSignatureCanvas() {
+  // Redraw at the element's real pixel size (accounting for devicePixelRatio)
+  // so strokes stay crisp; clears any existing signature on resize, which
+  // only happens on load/orientation change, not mid-signing.
+  const rect = sigCanvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  sigCanvas.width = rect.width * ratio;
+  sigCanvas.height = rect.height * ratio;
+  sigCtx.scale(ratio, ratio);
+  sigCtx.lineWidth = 2;
+  sigCtx.lineCap = "round";
+  sigCtx.strokeStyle = "#1b1f24";
+  sigHasContent = false;
+}
+
+function sigPos(e) {
+  const rect = sigCanvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+sigCanvas.addEventListener("pointerdown", (e) => {
+  sigDrawing = true;
+  sigHasContent = true;
+  const p = sigPos(e);
+  sigCtx.beginPath();
+  sigCtx.moveTo(p.x, p.y);
+  sigCanvas.setPointerCapture(e.pointerId);
+});
+sigCanvas.addEventListener("pointermove", (e) => {
+  if (!sigDrawing) return;
+  const p = sigPos(e);
+  sigCtx.lineTo(p.x, p.y);
+  sigCtx.stroke();
+});
+sigCanvas.addEventListener("pointerup", () => { sigDrawing = false; });
+sigCanvas.addEventListener("pointerleave", () => { sigDrawing = false; });
+
+$("sig-clear").onclick = () => {
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  sigHasContent = false;
+};
+
+window.addEventListener("resize", resizeSignatureCanvas);
+
+function signatureDataUrl() {
+  return sigHasContent ? sigCanvas.toDataURL("image/png") : null;
+}
+
+// -- Saved letters -------------------------------------------------------
+// A saved letter is exactly the /api/generate payload, persisted. The
+// list only ever shows subject/recipient/date -- loading a letter
+// fetches its full fields and fills the form, same as picking a saved
+// draft in an email client.
+
+function letterStatus(msg) {
+  $("letters-status").textContent = msg || "";
+}
+
+function formatLetterDate(iso) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
+}
+
+async function loadLetterList() {
+  try {
+    const r = await fetch("api/letters");
+    const letters = await r.json();
+    $("letters-empty").style.display = letters.length ? "none" : "block";
+    $("letter-list").innerHTML = letters
+      .map(l => `
+        <li class="${l.id === currentLetterId ? "active" : ""}">
+          <button type="button" class="letter-select" data-id="${l.id}">
+            ${escapeHtml(l.subject)}
+            <span class="letter-recipient">${escapeHtml(l.recipient_name.split("\n")[0])}${l.letter_date ? " · " + formatLetterDate(l.letter_date) : ""}</span>
+          </button>
+          <button type="button" class="letter-delete" data-id="${l.id}" title="Löschen">✕</button>
+        </li>`)
+      .join("");
+    $("letter-list").querySelectorAll(".letter-select").forEach(btn => {
+      btn.onclick = () => selectLetter(Number(btn.dataset.id));
+    });
+    $("letter-list").querySelectorAll(".letter-delete").forEach(btn => {
+      btn.onclick = () => deleteLetter(Number(btn.dataset.id));
+    });
+  } catch (e) {
+    letterStatus("Konnte gespeicherte Briefe nicht laden.");
+  }
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function resetForm() {
+  currentLetterId = null;
+  $("sender").value = "example";
+  $("custom-sender-fields").style.display = "none";
+  ["cs-name", "cs-strasse", "cs-ort", "cs-email", "recipient-name", "recipient-strasse", "recipient-ort", "subject", "bestellnummer", "body", "anrede", "grussformel"]
+    .forEach(id => { $(id).value = ""; });
+  $("pdf-language").value = "de";
+  $("letter-date").value = new Date().toISOString().slice(0, 10);
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  sigHasContent = false;
+  clearError();
+  letterStatus("");
+  loadLetterList();
+}
+
+async function selectLetter(id) {
+  clearError();
+  try {
+    const r = await fetch(`api/letters/${id}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const letter = await r.json();
+
+    currentLetterId = id;
+    $("sender").value = letter.sender_id;
+    $("custom-sender-fields").style.display = letter.sender_id === "custom" ? "block" : "none";
+    if (letter.custom_sender) {
+      $("cs-name").value = letter.custom_sender.name || "";
+      $("cs-strasse").value = letter.custom_sender.strasse || "";
+      $("cs-ort").value = letter.custom_sender.ort || "";
+      $("cs-email").value = letter.custom_sender.email || "";
+    }
+    $("recipient-name").value = letter.recipient_name || "";
+    $("recipient-strasse").value = letter.recipient_strasse || "";
+    $("recipient-ort").value = letter.recipient_ort || "";
+    $("subject").value = letter.subject || "";
+    $("bestellnummer").value = letter.bestellnummer || "";
+    $("pdf-language").value = letter.language || "de";
+    $("anrede").value = letter.anrede || "";
+    $("body").value = letter.body || "";
+    $("grussformel").value = letter.grussformel || "";
+    $("letter-date").value = letter.letter_date || "";
+
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    sigHasContent = false;
+    if (letter.signature) {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = window.devicePixelRatio || 1;
+        sigCtx.drawImage(img, 0, 0, sigCanvas.width / ratio, sigCanvas.height / ratio);
+      };
+      img.src = letter.signature;
+      // Not marked sigHasContent -- an unchanged signature stays
+      // unchanged server-side without being re-sent (see
+      // app/letters.py's _apply_request_to_letter); only a fresh
+      // stroke on the pad should count as "replace it".
+    }
+
+    letterStatus("");
+    loadLetterList();
+  } catch (e) {
+    showError("Konnte den Brief nicht laden: " + e.message);
+  }
+}
+
+async function saveLetter() {
+  clearError();
+  const payload = currentPayload();
+  const validationError = validate(payload);
+  if (validationError) {
+    showError(validationError);
+    return;
+  }
+
+  const btn = $("save-btn");
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Speichere…";
+
+  try {
+    const isUpdate = currentLetterId !== null;
+    const r = await fetch(isUpdate ? `api/letters/${currentLetterId}` : "api/letters", {
+      method: isUpdate ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      showError(d.detail ? String(d.detail) : `Fehler beim Speichern (HTTP ${r.status})`);
+      return;
+    }
+    const saved = await r.json();
+    currentLetterId = saved.id;
+    letterStatus("Gespeichert.");
+    await loadLetterList();
+  } catch (e) {
+    showError("Konnte den Brief nicht speichern: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+async function deleteLetter(id) {
+  if (!confirm("Diesen Brief wirklich löschen?")) return;
+  try {
+    await fetch(`api/letters/${id}`, { method: "DELETE" });
+    if (id === currentLetterId) resetForm();
+    else loadLetterList();
+  } catch (e) {
+    letterStatus("Konnte den Brief nicht löschen.");
+  }
+}
+
+$("new-letter-btn").onclick = resetForm;
+$("save-btn").onclick = saveLetter;
+
+function currentPayload() {
+  const senderId = $("sender").value;
+  const payload = {
+    sender_id: senderId,
+    recipient_name: $("recipient-name").value,
+    recipient_strasse: $("recipient-strasse").value,
+    recipient_ort: $("recipient-ort").value,
+    subject: $("subject").value,
+    body: $("body").value,
+    language: $("pdf-language").value,
+  };
+  if ($("letter-date").value) payload.letter_date = $("letter-date").value;
+  // Left blank on the form -> backend fills in its own default (same
+  // text these inputs show as a placeholder), matching letter_date's
+  // "only send it if the user actually set it" behavior above.
+  if ($("anrede").value.trim()) payload.anrede = $("anrede").value;
+  if ($("grussformel").value.trim()) payload.grussformel = $("grussformel").value;
+  if ($("bestellnummer").value.trim()) payload.bestellnummer = $("bestellnummer").value;
+  if (senderId === "custom") {
+    payload.custom_sender = {
+      name: $("cs-name").value,
+      strasse: $("cs-strasse").value,
+      ort: $("cs-ort").value,
+      email: $("cs-email").value,
+    };
+  }
+  const sig = signatureDataUrl();
+  if (sig) payload.signature = sig;
+  return payload;
+}
+
+function showError(msg) {
+  $("error").textContent = msg;
+  $("error").style.display = "block";
+}
+function clearError() {
+  $("error").style.display = "none";
+}
+
+function validate(payload) {
+  if (!payload.recipient_name.trim() || !payload.subject.trim() || !payload.body.trim()) {
+    return "Empfänger-Name, Titel und Text müssen ausgefüllt sein.";
+  }
+  if (payload.sender_id === "custom") {
+    const c = payload.custom_sender;
+    if (!c.name.trim() || !c.strasse.trim() || !c.ort.trim()) {
+      return "Für einen eigenen Absender müssen Name, Straße und Ort ausgefüllt sein.";
+    }
+  }
+  return null;
+}
+
+async function generate(download) {
+  clearError();
+  const payload = currentPayload();
+  const validationError = validate(payload);
+  if (validationError) {
+    showError(validationError);
+    return;
+  }
+
+  const btn = download ? $("download-btn") : $("preview-btn");
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Erzeuge PDF…";
+
+  try {
+    const r = await fetch(`api/generate${download ? "?download=true" : ""}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      const detail = typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail || d);
+      showError((d.error || detail || `Fehler (HTTP ${r.status})`) + (d.log_tail ? "\n\n" + d.log_tail : ""));
+      return;
+    }
+
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+
+    if (download) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `brief-${payload.subject.slice(0, 40).replace(/[^a-zA-Z0-9-_]+/g, "_")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = url;
+      $("preview-frame").src = url;
+      $("preview-frame").style.display = "block";
+      $("preview-empty").style.display = "none";
+    }
+  } catch (e) {
+    showError("Konnte den Server nicht erreichen: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+async function uploadToPaperless() {
+  clearError();
+  $("paperless-status").style.display = "none";
+  const payload = currentPayload();
+  const validationError = validate(payload);
+  if (validationError) {
+    showError(validationError);
+    return;
+  }
+
+  const btn = $("paperless-btn");
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Lade hoch…";
+
+  try {
+    const r = await fetch("api/upload-to-paperless", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json().catch(() => ({}));
+
+    if (!r.ok) {
+      showError((d.error || `Fehler (HTTP ${r.status})`) + (d.log_tail ? "\n\n" + d.log_tail : ""));
+      return;
+    }
+
+    const status = $("paperless-status");
+    status.textContent = "In Paperless hochgeladen -- wird dort verarbeitet.";
+    status.style.display = "block";
+  } catch (e) {
+    showError("Konnte den Server nicht erreichen: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+$("preview-btn").onclick = () => generate(false);
+$("download-btn").onclick = () => generate(true);
+$("paperless-btn").onclick = uploadToPaperless;
+
+// Default the date field to today so it's never accidentally blank/wrong
+// without the user noticing -- still fully editable.
+$("letter-date").value = new Date().toISOString().slice(0, 10);
+
+resizeSignatureCanvas();
+loadSenders();
+loadLetterList();
+</script>
+</body>
+</html>

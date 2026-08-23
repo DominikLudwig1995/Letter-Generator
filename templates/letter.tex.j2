@@ -1,0 +1,49 @@
+\documentclass[10pt,\VAR{doc_class_language}]{g-brief}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\BLOCK{if babel_language == "english"}
+\usepackage[english]{babel}
+\BLOCK{else}
+\usepackage{ngerman}
+\BLOCK{endif}
+\usepackage{enumerate}
+\usepackage{eurosym}
+\usepackage{graphicx}
+\lochermarke
+\faltmarken
+\fenstermarken
+\trennlinien
+
+\Name                {\VAR{sender_name}}
+\Strasse             {\VAR{sender_strasse}}
+\Zusatz              {\VAR{sender_zusatz}}
+\RetourAdresse       {}
+\Ort                 {\VAR{sender_ort}}
+\Land                {\VAR{sender_land}}
+\EMail               {\VAR{sender_email}}
+
+\BLOCK{if has_signature}
+\Unterschrift        {\includegraphics[height=1.8cm]{\VAR{signature_filename}}\\[-0.3em]\VAR{sender_name}}
+\BLOCK{else}
+\Unterschrift        {\VAR{sender_name}}
+\BLOCK{endif}
+
+\Postvermerk         {}
+\Adresse             {\VAR{recipient}}
+
+\Betreff             {\BLOCK{if bestellnummer}\VAR{bestellnummer_label}: \VAR{bestellnummer}\\\BLOCK{endif}\VAR{subject}}
+\renewcommand{\datum}{\VAR{date}}
+
+\Anrede              {\VAR{anrede}}
+
+\Gruss               {\VAR{grussformel}}{1cm}
+
+\Anlagen             {}
+\Verteiler           {}
+
+\begin{document}
+\begin{g-brief}
+\VAR{body}
+\end{g-brief}
+\end{document}
+\endinput

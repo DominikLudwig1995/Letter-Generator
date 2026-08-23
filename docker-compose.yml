@@ -1,0 +1,24 @@
+# One-command local start: `docker compose up --build`
+# Builds the image and serves it on http://localhost:8000, with
+# SQLite/signatures persisted in the named volume below across restarts.
+services:
+  brief:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - brief-data:/data
+    environment:
+      LOG_LEVEL: info
+      # Configure your own quick-pick sender(s) instead of the generic
+      # example -- see app/senders.py for the exact JSON shape.
+      # BRIEF_SENDERS_JSON: '{"me": {"name": "Jane Doe", "strasse": "Main St 1", "ort": "12345 Anytown"}}'
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  brief-data:
