@@ -1,0 +1,31 @@
+# Woodpecker CI, mirroring .github/workflows/ci.yml.
+when:
+  - event: push
+    branch: ${CI_REPO_DEFAULT_BRANCH}
+  - event: pull_request
+
+steps:
+  lint:
+    image: ghcr.io/astral-sh/uv:bookworm-slim
+    commands:
+      - uv run --frozen ruff check .
+      - uv run --frozen ruff format --check .
+
+  test:
+    image: ghcr.io/astral-sh/uv:bookworm-slim
+    commands:
+      - apt-get update
+      - >-
+        apt-get install -y --no-install-recommends
+        texlive-latex-base texlive-latex-recommended texlive-latex-extra
+        texlive-lang-german texlive-lang-english texlive-fonts-recommended
+        texlive-publishers cm-super
+      - uv sync --frozen
+      - uv run --frozen pytest --tb=short
+
+  docker:
+    image: docker.io/woodpeckerci/plugin-docker-buildx:6.1.2
+    depends_on: [lint, test]
+    settings:
+      repo: letter-generator
+      dry_run: true
