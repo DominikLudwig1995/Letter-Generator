@@ -6,13 +6,13 @@ when:
 
 steps:
   lint:
-    image: ghcr.io/astral-sh/uv:bookworm-slim
+    image: homelab/ci-python:3.14
     commands:
       - uv run --frozen ruff check .
       - uv run --frozen ruff format --check .
 
   test:
-    image: ghcr.io/astral-sh/uv:bookworm-slim
+    image: homelab/ci-python:3.14
     commands:
       - apt-get update
       - >-
