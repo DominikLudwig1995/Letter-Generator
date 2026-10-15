@@ -6,13 +6,13 @@ when:
 
 steps:
   lint:
-    image: homelab/ci-python:3.14
+    image: homelab/ci-python:3.15
     commands:
       - uv run --frozen ruff check .
       - uv run --frozen ruff format --check .
 
   test:
-    image: homelab/ci-python:3.14
+    image: homelab/ci-python:3.15
     commands:
       - apt-get update
       - >-
