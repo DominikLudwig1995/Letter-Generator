@@ -1,5 +1,7 @@
 # Letter Generator
 
+[![CI](https://ci.hieronymi-ludwig.de/api/badges/19/status.svg?branch=main)](https://ci.hieronymi-ludwig.de/repos/19)
+
 **Self-hosted business letter generator that renders real LaTeX PDFs — no template lock-in, no SaaS.**
 
 Fill in a recipient, subject and text, preview the PDF, download it. Sender
