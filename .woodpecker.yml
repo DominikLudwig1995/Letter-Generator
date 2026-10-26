@@ -25,6 +25,15 @@ steps:
 
 
   # Container image: validated on PRs, pushed to Harbor from main.
+  audit-python:
+    image: python:3.15-slim
+    # Nicht blockierend: zeigt Schwachstellen, ohne die Pipeline zu stoppen.
+    failure: ignore
+    commands:
+      - pip install --quiet --no-cache-dir uv pip-audit
+      - uv export --frozen --no-dev --no-hashes -o /tmp/requirements.txt
+      - pip-audit -r /tmp/requirements.txt --no-deps --disable-pip
+
   image-check:
     image: woodpeckerci/plugin-kaniko:2.3.3
     settings:

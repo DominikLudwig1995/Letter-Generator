@@ -46,6 +46,8 @@ COPY static/ static/
 # at /data.
 RUN mkdir -p /data
 
+RUN useradd --system --uid 10001 --no-create-home app && mkdir -p /data && chown -R app /app /data
+USER app
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
