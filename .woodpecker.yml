@@ -45,7 +45,7 @@ steps:
       - pip-audit -r /tmp/requirements.txt --no-deps --disable-pip
 
   image-check:
-    image: woodpeckerci/plugin-kaniko:2.3.3
+    image: woodpeckerci/plugin-kaniko:2.3.4
     settings:
       dry-run: true
       registry: harbor.hieronymi-ludwig.de
@@ -59,7 +59,7 @@ steps:
           exclude: ["**/*.md", "*.md", "LICENSE*", "docs/**"]
 
   image:
-    image: woodpeckerci/plugin-kaniko:2.3.3
+    image: woodpeckerci/plugin-kaniko:2.3.4
     settings:
       registry: harbor.hieronymi-ludwig.de
       repo: homelab/letter-generator
