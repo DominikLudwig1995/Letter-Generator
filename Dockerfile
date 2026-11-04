@@ -3,7 +3,7 @@
 # StaticFiles mount at "/".
 
 # --- Backend deps ---
-FROM docker.io/library/python:3.15-slim AS backend-builder
+FROM docker.io/library/python:3.15-slim@sha256:8c13a3f37a6a5b71498228e902c4b9f51c1f7900d49fabf71f9a650c6120e0d0 AS backend-builder
 COPY --from=ghcr.io/astral-sh/uv:0.13.7@sha256:96f40d3904aad8d0bd010539001d36c8e2188b981e1334471a90c4a1d93bb490 /uv /usr/local/bin/uv
 # Built at the same path the runtime stage copies it to and runs it
 # from (/app/.venv) -- uv bakes an absolute shebang into each console
@@ -16,7 +16,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 # --- Runtime ---
-FROM docker.io/library/python:3.15-slim
+FROM docker.io/library/python:3.15-slim@sha256:8c13a3f37a6a5b71498228e902c4b9f51c1f7900d49fabf71f9a650c6120e0d0
 
 # texlive-lang-german and texlive-publishers (for the g-brief document
 # class itself) are the two packages this template actually needs on
