@@ -4,7 +4,7 @@
 
 # --- Backend deps ---
 FROM docker.io/library/python:3.15-slim AS backend-builder
-COPY --from=ghcr.io/astral-sh/uv:0.13.6 /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.7@sha256:96f40d3904aad8d0bd010539001d36c8e2188b981e1334471a90c4a1d93bb490 /uv /usr/local/bin/uv
 # Built at the same path the runtime stage copies it to and runs it
 # from (/app/.venv) -- uv bakes an absolute shebang into each console
 # script (e.g. #!/build/.venv/bin/python for uvicorn), so a venv built
