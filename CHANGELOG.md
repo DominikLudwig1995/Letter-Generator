@@ -2,6 +2,11 @@
 
 One section per ISO week, generated from the merged pull requests (ProxmoxAnsible, scripts/changelog.py).
 
+## Week 2026-W46 (09.11. to 15.11.2026)
+
+- Changelog 2026-W45 ([#42](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/42), 11.11.)
+- Update patch updates ([#43](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/43), 13.11.)
+
 ## Week 2026-W45 (02.11. to 08.11.2026)
 
 - Lock file maintenance ([#32](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/32), 02.11.)
