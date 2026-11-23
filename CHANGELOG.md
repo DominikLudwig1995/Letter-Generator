@@ -2,6 +2,13 @@
 
 One section per ISO week, generated from the merged pull requests (ProxmoxAnsible, scripts/changelog.py).
 
+## Week 2026-W47 (16.11. to 22.11.2026)
+
+- Changelog 2026-W46 ([#44](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/44), 16.11.)
+- Update woodpeckerci/plugin-kaniko Docker tag to v2.3.5 ([#45](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/45), 17.11.)
+- Update ghcr.io/astral-sh/uv Docker tag to v0.13.9 ([#46](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/46), 18.11.)
+- Update pre-commit hook astral-sh/ruff-pre-commit to v0.17.6 ([#47](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/47), 20.11.)
+
 ## Week 2026-W46 (09.11. to 15.11.2026)
 
 - Changelog 2026-W45 ([#42](https://git.hieronymi-ludwig.de/dominik/Letter-Generator/pulls/42), 11.11.)
